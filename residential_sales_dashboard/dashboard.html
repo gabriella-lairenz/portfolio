@@ -1,0 +1,1037 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Residential Sales Dashboard | Gabriella Lairenz</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F4F6F9;--card:#FFFFFF;--line:#E3E8EF;--ink:#1F2937;--muted:#6B7280;
+  --blue:#2563EB;--blue-mid:#93B4F5;--blue-soft:#DBE7FD;--grey:#A3AEBD;
+  --good:#15803D;--good-bg:#DCFCE7;--bad:#B91C1C;--bad-bg:#FEE2E2;--warn:#B45309;--warn-bg:#FEF3C7;--red:#EF6B6B;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Inter,system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);font-size:13px}
+header.top{background:#0F172A;color:#fff;padding:12px 28px;display:flex;align-items:center;gap:28px;position:sticky;top:0;z-index:40}
+header.top .brand{font-weight:700;font-size:15px;letter-spacing:.2px;white-space:nowrap}
+header.top .brand small{display:block;font-weight:400;color:#94A3B8;font-size:11px}
+.tabs{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+.tabs button{background:transparent;color:#CBD5E1;border:0;padding:9px 14px;border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button:hover{background:#1E293B;color:#fff}
+.tabs button.active{background:#2563EB;color:#fff}
+.back-links{display:flex;gap:6px;white-space:nowrap}
+.back-links a{color:#CBD5E1;text-decoration:none;border:1px solid #334155;padding:7px 12px;border-radius:7px;font-weight:600;font-size:12px}
+.back-links a:hover{background:#1E293B;color:#fff;border-color:#475569}
+.wrap{max-width:1440px;margin:0 auto;padding:18px 28px 40px}
+.dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.dash-head h1{margin:0;font-size:21px}
+.dash-head .meta{color:var(--muted);font-size:12px;margin-top:3px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filters label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:3px;font-weight:600}
+select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;min-width:140px;color:var(--ink)}
+.btn{font:inherit;font-size:12px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;color:var(--ink)}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:#fff;padding:5px 10px;font:inherit;font-size:12px;cursor:pointer;color:var(--muted)}
+.seg button.on{background:var(--blue);color:#fff}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;position:relative;min-width:0}
+.card h3{margin:0;font-size:14px;display:flex;align-items:center;gap:4px}
+.card .sub{color:var(--muted);font-size:11.5px;margin:2px 0 10px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}.s8{grid-column:span 8}.s12{grid-column:span 12}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:14px}
+.kpi .label{font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center}
+.kpi .value{font-size:25px;font-weight:700;margin:4px 0 6px;letter-spacing:-.3px}
+.kpi .row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--muted);margin-top:3px;gap:6px}
+.kpi .row b{color:var(--ink);font-weight:600}.kpi .foot{font-size:11.5px;color:var(--muted);margin-top:6px}
+.chip{display:inline-block;padding:1px 7px;border-radius:10px;font-weight:600;font-size:11px;white-space:nowrap}
+.chip.good{background:var(--good-bg);color:var(--good)}.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}.chip.neutral{background:#F1F5F9;color:var(--muted)}
+.chart{position:relative;height:260px}
+.chart.tall{height:300px}.chart.short{height:220px}
+.fill-card{display:flex;flex-direction:column}
+.fill-card .chart{flex:1;min-height:260px}
+.legend-note{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:12px;flex-wrap:wrap}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.i{display:inline-flex;width:15px;height:15px;border-radius:50%;border:1px solid #9CA3AF;color:#6B7280;font-size:10px;font-style:normal;font-weight:700;align-items:center;justify-content:center;cursor:help;position:relative;margin-left:4px;flex:none}
+.i:hover::after{content:attr(data-tip);position:absolute;left:50%;top:20px;transform:translateX(-50%);width:270px;background:#111827;color:#fff;padding:8px 10px;border-radius:6px;font-size:11.5px;line-height:1.45;z-index:60;white-space:normal;font-weight:400;text-align:left;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+table.t{width:100%;border-collapse:collapse;font-size:12px}
+table.t th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:7px 8px;border-bottom:1px solid var(--line)}
+table.t td{padding:7px 8px;border-bottom:1px solid #F1F4F8;white-space:nowrap}
+table.t td.num,table.t th.num{text-align:right}
+table.t td.wrap{white-space:normal;line-height:1.45}
+.bar-cell{display:flex;align-items:center;gap:6px}
+.bar-cell .b{height:8px;border-radius:4px;background:var(--blue-mid)}
+.progress{margin:10px 0 18px}
+.progress .top{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:6px}
+.progress .top b{font-size:13px}
+.track{position:relative;height:12px;background:#EEF1F5;border-radius:6px}
+.track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+.track .pace{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.progress .foot{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+.trk-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.track.lg{height:26px;border-radius:5px}
+.track.lg .fill{border-radius:5px;display:flex;align-items:center;justify-content:flex-end;padding:0 8px;box-sizing:border-box;color:#fff;font-size:11.5px;font-weight:600;white-space:nowrap}
+.track.lg .out{position:absolute;top:0;bottom:0;display:flex;align-items:center;padding-left:6px;font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap}
+.trk-ref{font-size:10.5px;color:var(--muted);text-align:right;line-height:1.25;min-width:64px}
+.trk-ref b{display:block;color:var(--ink);font-size:12.5px}
+.empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:12px;text-align:center}
+/* AI summary */
+.hero{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.hero .card{padding:16px}
+.hero .big{font-size:28px;font-weight:700;letter-spacing:-.4px;margin:4px 0}
+.hero .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.hero .cap{font-size:11.5px;color:var(--muted)}
+.col-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.col-head .dot{width:10px;height:10px;border-radius:50%}
+.item{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:start;padding:10px 0;border-top:1px solid #F1F4F8}
+.item:first-of-type{border-top:0}
+.item .n{font-size:18px;font-weight:700;letter-spacing:-.3px;line-height:1.1}
+.item .n small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);letter-spacing:0;margin-top:2px}
+.item .t{font-size:12.5px;line-height:1.45}
+.item .t b{font-weight:600}
+.rec{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #F1F4F8}
+.rec:first-of-type{border-top:0}
+.rec .num{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:12px}
+.rec .what{font-size:13px;font-weight:600}
+.rec .why{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+.rec ul.ev{margin:3px 0 6px 16px;padding:0}
+.rec ul.ev li{margin:2px 0;color:var(--ink)}
+.rec .see{color:var(--muted);font-size:11px}
+.tag{display:inline-block;font-size:10.5px;font-weight:600;padding:1px 7px;border-radius:10px;background:var(--blue-soft);color:#1D4ED8;margin-left:6px}
+.disclaimer{font-size:11px;color:#B45309;margin-top:3px}
+@media (max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr)}.hero{grid-template-columns:repeat(2,1fr)}.s3,.s4,.s5,.s6,.s7,.s8{grid-column:span 12}}
+@media (max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}header.top{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">XXX Development · Residential Dashboard<small>Gabriella N Lairenz · Data Analyst Portfolio</small></div>
+  <nav class="tabs" id="tabs">
+    <button data-tab="overview" class="active">1 · Company Overview</button>
+    <button data-tab="drivers">2 · Sales Drivers</button>
+    <button data-tab="conversion">3 · Conversion &amp; Delivery</button>
+    <button data-tab="summary">AI Summary</button>
+    <button data-tab="dictionary">Metric Dictionary</button>
+  </nav>
+  <div class="back-links">
+    <a href="../ai-dashboards.html">← Back to Portfolio</a>
+    <a href="../cv.html">CV</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="dash-head">
+    <div>
+      <h1 id="title">Residential Sales Performance</h1>
+      <div class="meta" id="meta"></div>
+      <div class="disclaimer">* Disclaimer: all data in this dashboard is dummy data generated by AI for portfolio purposes only.</div>
+    </div>
+    <div class="filters" id="filters">
+      <label>Year<select id="fYear"></select></label>
+      <label>Through month (YTD)<select id="fUpto"></select></label>
+      <label>City group<select id="fRegion"></select></label>
+      <label>Home type<select id="fProduct"></select></label>
+      <button class="btn" id="reset">Reset filters</button>
+    </div>
+  </div>
+
+  <!-- 1 · OVERVIEW -->
+  <section class="panel active" id="p-overview">
+    <div class="kpis" id="k-overview"></div>
+    <div class="grid">
+      <div class="card s8 fill-card">
+        <div class="card-head">
+          <div><h3>Monthly net marketing sales vs target and last year<i class="i" data-tip="Bars: this year's net marketing sales by month. Blue = met the month's target (or beat last year when a filter is applied). Red = below. Monthly target = annual target phased by the 2024 monthly sales pattern.">i</i></h3>
+          <div class="sub" id="sub-monthly"></div></div>
+          <div class="seg" id="segMonthly"><button class="on" data-v="net">Net sales</button><button data-v="units">Units sold</button></div>
+        </div>
+        <div class="chart"><canvas id="cMonthly"></canvas></div>
+        <div class="legend-note" id="monthlyLegend"></div>
+      </div>
+      <div class="card s4">
+        <h3>Full-year tracking: targets and last year<i class="i" data-tip="Bar = YTD actual, labelled with its value and % achieved. Right end of the bar = the full-year target or last year's actual (shown on the right). Black marker = where you should be by the selected month if you were on pace (phased by the 2024 monthly pattern).">i</i></h3>
+        <div class="sub">YTD actual vs this year's targets and last year's actual results · marker = expected pace</div>
+        <div id="tracking"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s6">
+        <h3>Year-on-year bridge: what moved net sales<i class="i" data-tip="Net sales = new launches + old stock (homes from earlier launches). The new-launch change is split into units (at last year's average price) and price per unit. Old stock is shown as one bar because units are only tracked for new launches. The three bars add up to the total change.">i</i></h3>
+        <div class="sub" id="sub-bridge"></div>
+        <div class="chart"><canvas id="cBridge"></canvas></div>
+      </div>
+      <div class="card s3">
+        <h3>By city group</h3>
+        <div class="sub">Net sales · this year vs last year</div>
+        <div class="chart"><canvas id="cRegion"></canvas></div>
+      </div>
+      <div class="card s3">
+        <h3>By home type</h3>
+        <div class="sub">Net sales · this year vs last year</div>
+        <div class="chart"><canvas id="cProduct"></canvas></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s5">
+        <h3>Cumulative net sales vs target</h3>
+        <div class="sub">Running total from January</div>
+        <div class="chart"><canvas id="cCum"></canvas></div>
+      </div>
+      <div class="card s7">
+        <h3>Project scorecard</h3>
+        <div class="sub">Net sales YTD, change vs last year, and take-up of new launches</div>
+        <div id="tProjects"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · DRIVERS -->
+  <section class="panel" id="p-drivers">
+    <div class="kpis" id="k-drivers"></div>
+    <div class="grid">
+      <div class="card s8">
+        <h3>New launches: units released vs units sold<i class="i" data-tip="Units released in new clusters each month, the units sold from those releases, and take-up (sold ÷ released).">i</i></h3>
+        <div class="sub" id="sub-launch"></div>
+        <div class="chart"><canvas id="cLaunch"></canvas></div>
+      </div>
+      <div class="card s4">
+        <h3>Take-up by home type</h3>
+        <div class="sub">Sold ÷ released · this year vs last year</div>
+        <div class="chart"><canvas id="cTakeType"></canvas></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s6">
+        <h3>Take-up by project</h3>
+        <div class="sub">Dashed line = 50% healthy-release reference</div>
+        <div class="chart tall"><canvas id="cTakeProj"></canvas></div>
+      </div>
+      <div class="card s6">
+        <h3>Net sales by price band</h3>
+        <div class="sub">Price per unit · this year vs last year</div>
+        <div class="chart tall"><canvas id="cBand"></canvas></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s4">
+        <h3>Average discount by city group<i class="i" data-tip="Discount ÷ list price, where list price = net sales + discount.">i</i></h3>
+        <div class="sub">This year vs last year</div>
+        <div class="chart short"><canvas id="cDisc"></canvas></div>
+      </div>
+      <div class="card s4">
+        <h3>Payment method mix</h3>
+        <div class="sub">Share of net sales</div>
+        <div class="chart short"><canvas id="cPay"></canvas></div>
+      </div>
+      <div class="card s4">
+        <h3>New launches vs existing stock</h3>
+        <div class="sub">Net sales split · plus tax-break (PPN DTP) sales</div>
+        <div class="chart short"><canvas id="cStock"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · CONVERSION -->
+  <section class="panel" id="p-conversion">
+    <div class="kpis" id="k-conversion"></div>
+    <div class="grid">
+      <div class="card s8">
+        <h3>New contracts vs handover revenue<i class="i" data-tip="Net marketing sales is booked when the contract is signed. Revenue is recognised when keys are handed over, usually 1–2 years later.">i</i></h3>
+        <div class="sub">Monthly · contracts signed vs revenue recognised at handover</div>
+        <div class="chart"><canvas id="cHandover"></canvas></div>
+      </div>
+      <div class="card s4">
+        <h3>Cancellation reasons</h3>
+        <div class="sub">Share of cancelled value · full year</div>
+        <div class="chart"><canvas id="cReasons"></canvas></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s6">
+        <h3>Backlog and aged backlog<i class="i" data-tip="Backlog = signed contracts not yet handed over. Aged = share waiting more than 18 months.">i</i></h3>
+        <div class="sub">Month-end · Jan 2024 to selected month</div>
+        <div class="chart"><canvas id="cBacklog"></canvas></div>
+      </div>
+      <div class="card s3">
+        <h3>Cancellation rate by city group</h3>
+        <div class="sub">Cancelled ÷ gross bookings</div>
+        <div class="chart"><canvas id="cCancelReg"></canvas></div>
+      </div>
+      <div class="card s3">
+        <h3>Gross margin by home type</h3>
+        <div class="sub">On homes handed over</div>
+        <div class="chart"><canvas id="cMargin"></canvas></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s12">
+        <h3>Bank rejections by project<i class="i" data-tip="Bank-declined = cancelled contracts where the bank declined the buyer's mortgage. Rejection rate = bank-declined value ÷ gross bookings. Full year.">i</i></h3>
+        <div class="sub" id="sub-bankProj"></div>
+        <div id="tBankProj"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI SUMMARY -->
+  <section class="panel" id="p-summary">
+    <div class="hero" id="hero"></div>
+    <div class="grid">
+      <div class="card s6"><div class="col-head"><span class="dot" style="background:var(--good)"></span><h3>Achievements</h3></div><div id="ach"></div></div>
+      <div class="card s6"><div class="col-head"><span class="dot" style="background:var(--bad)"></span><h3>Gaps &amp; issues</h3></div><div id="gaps"></div></div>
+    </div>
+    <div class="grid">
+      <div class="card s12"><div class="col-head"><span class="dot" style="background:var(--blue)"></span><h3>Recommendations</h3></div><div id="recs"></div></div>
+    </div>
+  </section>
+
+  <!-- DICTIONARY -->
+  <section class="panel" id="p-dictionary">
+    <div class="grid">
+      <div class="card s12">
+        <h3>North-star metric and levers</h3>
+        <div class="sub">If net marketing sales is off target, check the three levers in this order</div>
+        <div id="tLevers"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="card s12">
+        <h3>Metric dictionary</h3>
+        <div class="sub">Chips: % = relative change, pp = percentage points (e.g. 49.0% → 45.7% = −3.3pp)</div>
+        <div id="tMetrics"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="data.js?v=3"></script>
+<script>
+const D = window.DASHBOARD_DATA;
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const YEARS = [2024, 2025];
+const PRODUCTS = ["Landed house","Shophouse","Land lot","Apartment"];
+const BANDS = ["Under 1bn","1-2bn","2-5bn","Above 5bn"];
+const BAND_LABEL = {"Under 1bn":"< Rp1 bn","1-2bn":"Rp1–2 bn","2-5bn":"Rp2–5 bn","Above 5bn":"> Rp5 bn"};
+const REGIONS = [...new Set(D.sales.map(r => r.region))];
+const C = {blue:"#2563EB", mid:"#93B4F5", soft:"#DBE7FD", grey:"#A3AEBD", red:"#EF6B6B", ink:"#1F2937", good:"#15803D", amber:"#B45309"};
+const S = {year:2025, upto:12, region:"all", product:"all", monthly:"net", tab:"overview"};
+const charts = {};
+
+Chart.defaults.font.family = '"Segoe UI",Inter,system-ui,sans-serif';
+Chart.defaults.font.size = 11;
+Chart.defaults.color = "#6B7280";
+Chart.defaults.plugins.legend.display = false;
+Chart.defaults.maintainAspectRatio = false;
+Chart.defaults.animation.duration = 350;
+
+/* value labels drawn on top of bars when options.plugins.vl is set */
+Chart.register({
+  id: "vl",
+  afterDatasetsDraw(chart, _args, opts) {
+    if (!opts || !opts.fmt) return;
+    const {ctx} = chart;
+    ctx.save();
+    ctx.font = "600 10.5px Segoe UI, sans-serif";
+    ctx.fillStyle = "#374151";
+    chart.data.datasets.forEach((ds, di) => {
+      if (opts.datasets && !opts.datasets.includes(di)) return;
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      meta.data.forEach((el, i) => {
+        const raw = ds.data[i];
+        if (raw == null) return;
+        const text = opts.fmt(raw, i, di);
+        if (!text) return;
+        const horizontal = chart.options.indexAxis === "y";
+        if (horizontal) {
+          ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          ctx.fillText(text, el.x + 4, el.y);
+        } else {
+          ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+          const top = Math.min(el.y, el.base ?? el.y);
+          ctx.fillText(text, el.x, top - 3);
+        }
+      });
+    });
+    ctx.restore();
+  }
+});
+
+/* ---------- formatting ---------- */
+const sum = (a, f) => a.reduce((t, r) => t + (r[f] || 0), 0);
+const grp = (a, k, f) => { const m = {}; a.forEach(r => { m[r[k]] = (m[r[k]] || 0) + (r[f] || 0); }); return m; };
+const div = (a, b) => b ? a / b : null;
+function rp(n, d) {
+  if (n == null || isNaN(n)) return "—";
+  const s = n < 0 ? "−" : "", v = Math.abs(n);
+  if (v >= 1e12) return `${s}Rp${(v / 1e12).toFixed(d ?? 2)} tn`;
+  if (v >= 1e9) return `${s}Rp${Math.round(v / 1e9).toLocaleString("en-US")} bn`;
+  return `${s}Rp${Math.round(v / 1e6)} m`;
+}
+const rpAxis = v => v === 0 ? "0" : (Math.abs(v) >= 1e12 ? (v / 1e12).toFixed(1) + " tn" : Math.round(v / 1e9) + " bn");
+const pct = (x, d = 1) => x == null || isNaN(x) ? "—" : (x * 100).toFixed(d) + "%";
+const num = n => n == null ? "—" : Math.round(n).toLocaleString("en-US");
+function chip(cur, prev, {mode = "pct", inverse = false, label} = {}) {
+  if (cur == null || prev == null || (mode === "pct" && !prev)) return `<span class="chip neutral">n/a</span>`;
+  const d = mode === "pct" ? (cur - prev) / Math.abs(prev) : (cur - prev);
+  const txt = mode === "pct" ? `${(Math.abs(d) * 100).toFixed(1)}%` : `${(Math.abs(d) * 100).toFixed(1)}pp`;
+  const up = d > 0, flat = Math.abs(d) < (mode === "pct" ? 0.0005 : 0.0005);
+  const good = inverse ? !up : up;
+  const cls = flat ? "neutral" : (good ? "good" : "bad");
+  return `<span class="chip ${cls}">${flat ? "■" : (up ? "▲" : "▼")} ${up ? "+" : (flat ? "" : "−")}${txt}</span>`;
+}
+const tip = t => `<i class="i" data-tip="${t.replace(/"/g, "&quot;")}">i</i>`;
+
+/* ---------- data ---------- */
+const scopeOf = () => ({region: S.region, product: S.product});
+const COMPANY = {region: "all", product: "all"};
+const BANK = "Bank declined the mortgage";
+const inScope = (r, sc) => (sc.region === "all" || r.region === sc.region) && (sc.product === "all" || r.product === sc.product);
+function rows(tbl, year, upto, sc) {
+  return D[tbl].filter(r => r.year === year && inScope(r, sc) && (upto == null || r.month == null || r.month <= upto));
+}
+const isCompany = sc => sc.region === "all" && sc.product === "all";
+
+/* monthly phasing of targets: 2024 company sales pattern */
+const PHASE = (() => {
+  const m = Array(12).fill(0);
+  D.sales.filter(r => r.year === 2024).forEach(r => { m[r.month - 1] += r.net_sales_idr; });
+  const t = m.reduce((a, b) => a + b, 0);
+  return m.map(v => v / t);
+})();
+const cumPhase = upto => PHASE.slice(0, upto).reduce((a, b) => a + b, 0);
+const target = (year, metric) => { const r = D.targets.find(t => t.year === year && t.metric === metric); return r ? +r.value : null; };
+const fullTarget = year => target(year, "net_marketing_sales_target");
+const revisedTarget = year => target(year, "net_marketing_sales_target_revised");
+
+function pack(year, upto, sc) {
+  if (!YEARS.includes(year)) return null;
+  const s = rows("sales", year, upto, sc), sAll = rows("sales", year, 12, sc);
+  const l = rows("launches", year, upto, sc), lAll = rows("launches", year, 12, sc);
+  const h = rows("handovers", year, upto, sc), hAll = rows("handovers", year, 12, sc);
+  const c = rows("cancellations", year, null, sc);
+  const bl = D.backlog.filter(r => r.year === year && r.month === upto && inScope(r, sc));
+  const fresh = s.filter(r => r.inventory_type === "New launch");
+  const P = {
+    year, upto,
+    net: sum(s, "net_sales_idr"), gross: sum(s, "gross_sales_idr"), cancel: sum(s, "cancel_value_idr"),
+    disc: sum(s, "discount_idr"), units: sum(s, "units_sold"), unitsCancelled: sum(s, "units_cancelled"),
+    kpr: sum(s, "kpr_net_idr"), cash: sum(s, "cash_net_idr"), inst: sum(s, "installment_net_idr"), ppn: sum(s, "ppn_net_idr"),
+    newNet: sum(fresh, "net_sales_idr"), newUnits: sum(fresh, "units_sold"),
+    offered: sum(l, "units_offered"), launchSold: sum(l, "units_sold"),
+    rev: sum(h, "revenue_idr"), gp: sum(h, "gross_profit_idr"),
+    backlog: sum(bl, "backlog_value_idr"), aged: sum(bl, "aged_over_18m_idr"),
+    byRegion: grp(s, "region", "net_sales_idr"), byProduct: grp(s, "product", "net_sales_idr"), byBand: grp(s, "price_band", "net_sales_idr"),
+    reasons: grp(c, "reason", "cancel_value_idr"), cancelTotalFY: sum(c, "cancel_value_idr"),
+  };
+  P.oldNet = P.net - P.newNet;
+  P.takeup = div(P.launchSold, P.offered);
+  P.cancelRate = div(P.cancel, P.gross);
+  P.discRate = div(P.disc, P.net + P.disc);
+  P.margin = div(P.gp, P.rev);
+  P.agedShare = div(P.aged, P.backlog);
+  P.asp = div(P.newNet, P.newUnits);
+  P.kprShare = div(P.kpr, P.net); P.cashShare = div(P.cash, P.net); P.instShare = div(P.inst, P.net); P.ppnShare = div(P.ppn, P.net);
+  const mArr = (arr, f) => { const m = Array(12).fill(0); arr.forEach(r => { m[r.month - 1] += r[f] || 0; }); return m.map((v, i) => i < upto ? v : null); };
+  P.mNet = mArr(sAll, "net_sales_idr"); P.mUnits = mArr(sAll, "units_sold");
+  P.mOffered = mArr(lAll, "units_offered"); P.mSold = mArr(lAll, "units_sold"); P.mRev = mArr(hAll, "revenue_idr");
+  const by = (arr, k, fields) => { const m = {}; arr.forEach(r => { const o = m[r[k]] || (m[r[k]] = {}); fields.forEach(f => { o[f] = (o[f] || 0) + (r[f] || 0); }); }); return m; };
+  P.takeByProduct = by(l, "product", ["units_offered", "units_sold"]);
+  P.takeByProject = by(l, "project", ["units_offered", "units_sold"]);
+  P.projects = by(s, "project", ["net_sales_idr"]);
+  P.projMeta = {}; s.forEach(r => { P.projMeta[r.project] = {region: r.region, city: r.city}; });
+  P.discByRegion = by(s, "region", ["discount_idr", "net_sales_idr"]);
+  P.cancelByRegion = by(s, "region", ["cancel_value_idr", "gross_sales_idr"]);
+  P.bankByProject = by(c.filter(r => r.reason === BANK), "project", ["cancel_value_idr"]);
+  P.cancelByProject = by(c, "project", ["cancel_value_idr"]);
+  P.payByProject = by(s, "project", ["gross_sales_idr", "kpr_net_idr", "net_sales_idr"]);
+  P.marginByProduct = by(h, "product", ["gross_profit_idr", "revenue_idr"]);
+  return P;
+}
+
+/* ---------- chart helper ---------- */
+function draw(id, cfg) {
+  if (charts[id]) charts[id].destroy();
+  const el = document.getElementById(id);
+  if (!el) return;
+  charts[id] = new Chart(el, cfg);
+}
+function emptyChart(id, text) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  const el = document.getElementById(id);
+  const box = el.parentElement;
+  box.querySelectorAll(".empty").forEach(n => n.remove());
+  el.style.display = "none";
+  const d = document.createElement("div"); d.className = "empty"; d.textContent = text; box.appendChild(d);
+}
+function resetChartBox(id) {
+  const el = document.getElementById(id); if (!el) return;
+  el.style.display = ""; el.parentElement.querySelectorAll(".empty").forEach(n => n.remove());
+}
+const moneyTip = {callbacks: {label: c => `${c.dataset.label}: ${rp(Array.isArray(c.raw) ? c.raw[1] - c.raw[0] : c.raw)}`}};
+const pctTip = {callbacks: {label: c => `${c.dataset.label}: ${pct(c.raw)}`}};
+const gridY = {grid: {color: "#EEF1F5"}, border: {display: false}};
+const noGrid = {grid: {display: false}, border: {display: false}};
+
+function pairBars(id, labels, cy, ly, {money = true, horizontal = true, ylab} = {}) {
+  draw(id, {
+    type: "bar",
+    data: {labels, datasets: [
+      {label: String(S.year - 1), data: ly, backgroundColor: C.grey, borderRadius: 3, barPercentage: .8, categoryPercentage: .7},
+      {label: String(S.year), data: cy, backgroundColor: C.blue, borderRadius: 3, barPercentage: .8, categoryPercentage: .7}
+    ]},
+    options: {
+      indexAxis: horizontal ? "y" : "x",
+      layout: {padding: {right: horizontal ? 46 : 0, top: horizontal ? 0 : 16}},
+      plugins: {legend: {display: true, position: "top", align: "end", labels: {boxWidth: 10, boxHeight: 10}},
+        tooltip: money ? moneyTip : pctTip,
+        vl: {datasets: [1], fmt: (v, i) => {
+          if (!money) return pct(v, 0);
+          const prev = ly[i]; if (!prev) return rp(v, 1);
+          const d = (v - prev) / prev; return `${d >= 0 ? "+" : "−"}${Math.abs(d * 100).toFixed(0)}%`;
+        }}},
+      scales: horizontal
+        ? {x: {...gridY, ticks: {callback: money ? rpAxis : v => pct(v, 0)}}, y: noGrid}
+        : {y: {...gridY, ticks: {callback: money ? rpAxis : v => pct(v, 0)}}, x: noGrid}
+    }
+  });
+}
+
+/* ---------- KPI cards ---------- */
+function kpiCard({label, help, value, rows: rs = [], foot}) {
+  return `<div class="card kpi">
+    <div class="label">${label}${help ? tip(help) : ""}</div>
+    <div class="value">${value}</div>
+    ${rs.map(r => `<div class="row"><span>${r[0]} <b>${r[1]}</b></span>${r[2] || ""}</div>`).join("")}
+    ${foot ? `<div class="foot">${foot}</div>` : ""}
+  </div>`;
+}
+/* ---------- 1 · OVERVIEW ---------- */
+function renderOverview(cy, ly, sc) {
+  const company = isCompany(sc);
+  const tFull = company ? fullTarget(S.year) : null;
+  const tYtd = tFull ? tFull * cumPhase(S.upto) : null;
+  const lyLabel = `vs LY`;
+  document.getElementById("k-overview").innerHTML = [
+    kpiCard({label: "Net Marketing Sales", help: "Value of contracts signed in the period, after cancellations. The north-star metric.", value: rp(cy.net),
+      rows: [["vs Target", tYtd ? rp(tYtd) : "—", tYtd ? chip(cy.net, tYtd) : `<span class="chip neutral">company only</span>`], [lyLabel, ly ? rp(ly.net) : "—", chip(cy.net, ly && ly.net)]],
+      foot: `${num(cy.units)} units sold`}),
+    kpiCard({label: "New-Launch Take-up", help: "Units sold from this year's new launches ÷ units released.", value: pct(cy.takeup),
+      rows: [["Sold / released", `${num(cy.launchSold)} / ${num(cy.offered)}`, ""], [lyLabel, ly ? pct(ly.takeup) : "—", chip(cy.takeup, ly && ly.takeup, {mode: "pp"})]],
+      foot: `New-launch sales ${rp(cy.newNet)}`}),
+    kpiCard({label: "Cancellation Rate", help: "Cancelled value ÷ gross bookings (net sales + cancelled).", value: pct(cy.cancelRate),
+      rows: [["Cancelled", rp(cy.cancel), ""], [lyLabel, ly ? pct(ly.cancelRate) : "—", chip(cy.cancelRate, ly && ly.cancelRate, {mode: "pp", inverse: true})]],
+      foot: `${num(cy.unitsCancelled)} units cancelled`}),
+    kpiCard({label: "Average Discount", help: "Discount ÷ list price. List price = net sales + discount.", value: pct(cy.discRate),
+      rows: [["Discount given", rp(cy.disc), ""], [lyLabel, ly ? pct(ly.discRate) : "—", chip(cy.discRate, ly && ly.discRate, {mode: "pp", inverse: true})]],
+      foot: `Avg new-unit price ${cy.asp ? "Rp" + (cy.asp / 1e9).toFixed(2) + " bn" : "—"}`}),
+    kpiCard({label: "Handover Revenue", help: "Revenue recognised when keys are handed over. Lags marketing sales by 1–2 years.", value: rp(cy.rev),
+      rows: [[lyLabel, ly ? rp(ly.rev) : "—", chip(cy.rev, ly && ly.rev)], ["Gross margin", pct(cy.margin), ""], ["Margin LY", ly ? pct(ly.margin) : "—", chip(cy.margin, ly && ly.margin, {mode: "pp"})]],
+      foot: `Gross profit ${rp(cy.gp)}`}),
+    kpiCard({label: "Backlog", help: "Signed contracts not yet handed over, at month end. Aged = waiting more than 18 months.", value: rp(cy.backlog, 1),
+      rows: [[lyLabel, ly ? rp(ly.backlog, 1) : "—", chip(cy.backlog, ly && ly.backlog)], ["Aged >18m", pct(cy.agedShare), ""], ["Aged LY", ly ? pct(ly.agedShare) : "—", chip(cy.agedShare, ly && ly.agedShare, {mode: "pp", inverse: true})]],
+      foot: `Aged value ${rp(cy.aged)}`}),
+  ].join("");
+
+  /* monthly */
+  const units = S.monthly === "units";
+  const cur = units ? cy.mUnits : cy.mNet;
+  const lyFull = ly ? pack(S.year - 1, 12, sc) : null;
+  const prevLine = lyFull ? (units ? lyFull.mUnits : lyFull.mNet) : Array(12).fill(null);
+  const tgt = (!units && company && tFull) ? PHASE.map(w => w * tFull) : Array(12).fill(null);
+  const ref = (!units && company && tFull) ? tgt : prevLine;
+  const colors = cur.map((v, i) => v == null ? C.blue : (ref[i] == null || v >= ref[i] ? C.blue : C.red));
+  document.getElementById("sub-monthly").textContent = !units && company
+    ? `${S.year} · target ${rp(tFull, 1)} phased by the 2024 monthly pattern (grey area = last year)`
+    : `${S.year} · bars coloured vs last year (targets are set at company level)`;
+  const vsTgt = ref === tgt;
+  const sw = (c, t) => `<span><i class="sw" style="background:${c}"></i>${t}</span>`;
+  document.getElementById("monthlyLegend").innerHTML =
+    sw(C.blue, vsTgt ? "Month met target" : "Month at or above last year") +
+    sw(C.red, vsTgt ? "Month below target" : "Month below last year") +
+    sw(C.grey, "Last year") + (vsTgt ? sw(C.ink, "Target") : "");
+  draw("cMonthly", {
+    data: {labels: MONTHS, datasets: [
+      {type: "line", label: "Target", data: tgt, borderColor: C.ink, borderDash: [4, 4], borderWidth: 1.5, pointRadius: 3, pointBackgroundColor: C.ink, order: 0},
+      {type: "line", label: `${S.year - 1}`, data: prevLine, borderColor: C.grey, backgroundColor: "rgba(163,174,189,.18)", fill: "origin", borderWidth: 2, pointRadius: 0, tension: .3, order: 3},
+      {type: "bar", label: `${S.year}`, data: cur, backgroundColor: colors, borderRadius: 3, order: 2}
+    ]},
+    options: {
+      plugins: {tooltip: units ? {callbacks: {label: c => `${c.dataset.label}: ${num(c.raw)} units`}} : moneyTip},
+      scales: {y: {...gridY, ticks: {callback: units ? v => num(v) : rpAxis}}, x: noGrid}
+    }
+  });
+
+  /* tracking */
+  const tr = [];
+  const pace = cumPhase(S.upto);
+  const bar = (name, actual, full, note, vsLy) => {
+    if (!full) return "";
+    const share = actual / full, ahead = share >= pace - 0.0001;
+    const left = Math.max(0, full - actual), rem = 12 - S.upto;
+    const ref = vsLy ? `${S.year - 1} actual` : "target";
+    const status = vsLy ? (ahead ? "Ahead of last year" : "Behind last year") : (ahead ? "Ahead of pace" : "Behind pace");
+    const tail = rem ? ` · needs ${rp(left / rem)}/month for ${rem} months to match ${ref}`
+      : (left > 0 ? ` · short of ${ref} by ${rp(left)}` : ` · beat ${ref} by ${rp(actual - full)}`);
+    const w = Math.min(share, 1) * 100, label = `${rp(actual)} · ${pct(share)}`;
+    const inside = w >= 45;
+    return `<div class="progress">
+      <div class="top"><span><b>${name}</b></span><span class="chip ${ahead ? "good" : "bad"}">${status}</span></div>
+      <div class="trk-row">
+        <div class="track lg">
+          <div class="fill" style="width:${w}%;background:${ahead ? C.blue : C.red}">${inside ? label : ""}</div>
+          ${inside ? "" : `<span class="out" style="left:${Math.max(w, pace * 100)}%">${label}</span>`}
+          <div class="pace" style="left:${pace * 100}%"></div>
+        </div>
+        <div class="trk-ref">${vsLy ? `${S.year - 1} actual` : "Target"}<b>${rp(full, 1)}</b></div>
+      </div>
+      <div class="foot">Expected ${pct(pace)} by ${MONTHS[S.upto - 1]}${tail}${note ? ` · ${note}` : ""}</div>
+    </div>`;
+  };
+  if (company) {
+    tr.push(bar("Original target", cy.net, fullTarget(S.year)));
+    if (revisedTarget(S.year)) tr.push(bar("Revised target", cy.net, revisedTarget(S.year), "lowered mid-year"));
+  }
+  if (ly) tr.push(bar(`Net sales vs ${S.year - 1} actual`, cy.net, pack(S.year - 1, 12, sc).net, "", true));
+  if (ly) tr.push(bar(`New-launch sales vs ${S.year - 1} actual`, cy.newNet, pack(S.year - 1, 12, sc).newNet, "only projects launched in the year", true));
+  document.getElementById("tracking").innerHTML = tr.join("") || `<div class="empty" style="height:120px">No full-year reference for this selection</div>`;
+
+  /* bridge */
+  if (ly) {
+    resetChartBox("cBridge");
+    const aspLy = div(ly.newNet, ly.newUnits) || 0, aspCy = div(cy.newNet, cy.newUnits) || 0;
+    const vol = (cy.newUnits - ly.newUnits) * aspLy, price = cy.newUnits * (aspCy - aspLy), carry = cy.oldNet - ly.oldNet;
+    const a = ly.net, b = a + vol, c2 = b + price, d = c2 + carry;
+    const steps = [[0, a], [a, b], [b, c2], [c2, d], [0, cy.net]];
+    const deltas = [a, vol, price, carry, cy.net];
+    document.getElementById("sub-bridge").textContent = `Grey = ${S.year - 1} total · red/blue = what changed · black = ${S.year} total · Jan–${MONTHS[S.upto - 1]} change ${rp(cy.net - ly.net)} (${((cy.net - ly.net) / ly.net * 100).toFixed(1)}%)`;
+    const short = v => v >= 1e12 ? `${(v / 1e12).toFixed(1)} tn` : `${(v / 1e9).toFixed(0)} bn`;
+    const labels = [
+      [`${S.year - 1} total`],
+      ["New launch:", vol < 0 ? "fewer units" : "more units", `${num(ly.newUnits)} → ${num(cy.newUnits)}`],
+      ["New launch:", price < 0 ? "lower price" : "higher price", `${(aspLy / 1e9).toFixed(2)} → ${(aspCy / 1e9).toFixed(2)} bn`],
+      ["Old stock:", carry < 0 ? "less sales" : "more sales", `${short(ly.oldNet)} → ${short(cy.oldNet)}`],
+      [`${S.year} total`]
+    ];
+    draw("cBridge", {
+      type: "bar",
+      data: {labels,
+        datasets: [{label: "Net sales", data: steps, borderRadius: 3,
+          backgroundColor: deltas.map((v, i) => i === 0 || i === 4 ? (i === 0 ? C.grey : C.ink) : (v < 0 ? C.red : C.blue))}]},
+      options: {layout: {padding: {top: 18}},
+        plugins: {tooltip: {callbacks: {label: c => (c.dataIndex === 0 || c.dataIndex === 4 ? "Net sales " : "Change vs last year ") + rp(deltas[c.dataIndex])}},
+          vl: {fmt: (_v, i) => (i === 0 || i === 4 ? "" : (deltas[i] >= 0 ? "+" : "")) + rp(deltas[i])}},
+        scales: {y: {...gridY, min: Math.max(0, Math.floor(Math.min(a, b, c2, d, cy.net) * 0.85 / 1e11) * 1e11), ticks: {callback: rpAxis}}, x: {...noGrid, ticks: {maxRotation: 0, autoSkip: false, font: {size: 10}}}}}
+    });
+  } else {
+    document.getElementById("sub-bridge").textContent = "";
+    emptyChart("cBridge", "Needs prior-year data (2023 is not in this dataset)");
+  }
+
+  /* region / product */
+  const regs = REGIONS.filter(r => (cy.byRegion[r] || (ly && ly.byRegion[r])));
+  pairBars("cRegion", regs, regs.map(r => cy.byRegion[r] || 0), regs.map(r => ly ? ly.byRegion[r] || 0 : null));
+  const prods = PRODUCTS.filter(p => (cy.byProduct[p] || (ly && ly.byProduct[p])));
+  pairBars("cProduct", prods, prods.map(p => cy.byProduct[p] || 0), prods.map(p => ly ? ly.byProduct[p] || 0 : null));
+
+  /* cumulative */
+  const cum = arr => { let t = 0; return arr.map(v => v == null ? null : (t += v)); };
+  const ds = [
+    {label: `${S.year}`, data: cum(cy.mNet), borderColor: C.blue, backgroundColor: C.blue, borderWidth: 2.5, pointRadius: 0, tension: .25},
+  ];
+  if (lyFull) ds.push({label: `${S.year - 1}`, data: cum(lyFull.mNet), borderColor: C.grey, borderWidth: 2, pointRadius: 0, tension: .25});
+  if (company && fullTarget(S.year)) ds.push({label: "Original target", data: cum(PHASE.map(w => w * fullTarget(S.year))), borderColor: C.ink, borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0});
+  if (company && revisedTarget(S.year)) ds.push({label: "Revised target", data: cum(PHASE.map(w => w * revisedTarget(S.year))), borderColor: C.amber, borderDash: [2, 3], borderWidth: 1.5, pointRadius: 0});
+  draw("cCum", {type: "line", data: {labels: MONTHS, datasets: ds},
+    options: {plugins: {legend: {display: true, position: "top", align: "end", labels: {boxWidth: 10, boxHeight: 2}}, tooltip: moneyTip},
+      scales: {y: {...gridY, ticks: {callback: rpAxis}}, x: noGrid}}});
+
+  /* project table */
+  const names = Object.keys(cy.projects).sort((a, b) => cy.projects[b].net_sales_idr - cy.projects[a].net_sales_idr);
+  const max = Math.max(...names.map(n => cy.projects[n].net_sales_idr), 1);
+  const take = (p, n) => p && p.takeByProject[n] && p.takeByProject[n].units_offered ? p.takeByProject[n].units_sold / p.takeByProject[n].units_offered : null;
+  document.getElementById("tProjects").innerHTML = `<table class="t"><thead><tr>
+      <th>Project</th><th>City group</th><th>Net sales</th><th class="num">vs LY</th><th class="num">Take-up</th><th class="num">Δ take-up</th></tr></thead><tbody>
+    ${names.map(n => {
+      const v = cy.projects[n].net_sales_idr, p = ly && ly.projects[n] ? ly.projects[n].net_sales_idr : null;
+      const t1 = take(cy, n), t0 = take(ly, n);
+      return `<tr><td>${n}</td><td>${cy.projMeta[n].region}</td>
+        <td><div class="bar-cell"><div class="b" style="width:${(v / max) * 120}px"></div>${rp(v)}</div></td>
+        <td class="num">${chip(v, p)}</td><td class="num">${pct(t1)}</td><td class="num">${chip(t1, t0, {mode: "pp"})}</td></tr>`;
+    }).join("")}</tbody></table>`;
+}
+
+/* ---------- 2 · DRIVERS ---------- */
+function renderDrivers(cy, ly) {
+  document.getElementById("k-drivers").innerHTML = [
+    kpiCard({label: "New-Launch Sales", help: "Net sales from clusters launched this year.", value: rp(cy.newNet),
+      rows: [["Share of net sales", pct(div(cy.newNet, cy.net)), ""], ["vs LY", ly ? rp(ly.newNet) : "—", chip(cy.newNet, ly && ly.newNet)]]}),
+    kpiCard({label: "Units Released", help: "Units offered for sale in new launches.", value: num(cy.offered),
+      rows: [["Released LY", ly ? num(ly.offered) : "—", chip(cy.offered, ly && ly.offered)], ["Units sold", num(cy.launchSold), ""], ["Sold LY", ly ? num(ly.launchSold) : "—", chip(cy.launchSold, ly && ly.launchSold)]]}),
+    kpiCard({label: "Take-up Rate", help: "Units sold ÷ units released in new launches.", value: pct(cy.takeup),
+      rows: [["Reference", "≥ 50%", `<span class="chip ${cy.takeup >= .5 ? "good" : "bad"}">${cy.takeup >= .5 ? "OK" : "Below"}</span>`], ["vs LY", ly ? pct(ly.takeup) : "—", chip(cy.takeup, ly && ly.takeup, {mode: "pp"})]]}),
+    kpiCard({label: "Avg New-Unit Price", help: "New-launch net sales ÷ new units sold.", value: cy.asp ? `Rp${(cy.asp / 1e9).toFixed(2)} bn` : "—",
+      rows: [["vs LY", ly && ly.asp ? `Rp${(ly.asp / 1e9).toFixed(2)} bn` : "—", chip(cy.asp, ly && ly.asp)]]}),
+    kpiCard({label: "Average Discount", help: "Discount ÷ list price.", value: pct(cy.discRate),
+      rows: [["Discount given", rp(cy.disc), ""], ["vs LY", ly ? pct(ly.discRate) : "—", chip(cy.discRate, ly && ly.discRate, {mode: "pp", inverse: true})]]}),
+    kpiCard({label: "Mortgage (KPR) Share", help: "Share of net sales financed by bank mortgage.", value: pct(cy.kprShare, 0),
+      rows: [["Tax-break sales", rp(cy.ppn), ""], ["Tax-break share", pct(cy.ppnShare), ""], ["Tax-break LY", ly ? pct(ly.ppnShare) : "—", chip(cy.ppnShare, ly && ly.ppnShare, {mode: "pp"})]]}),
+  ].join("");
+
+  /* launches monthly */
+  const tu = cy.mOffered.map((o, i) => o ? cy.mSold[i] / o : null);
+  document.getElementById("sub-launch").textContent = `${S.year} · ${num(cy.launchSold)} sold of ${num(cy.offered)} released (${pct(cy.takeup)})`;
+  draw("cLaunch", {data: {labels: MONTHS, datasets: [
+      {type: "line", label: "Take-up", data: tu, yAxisID: "y1", borderColor: C.ink, backgroundColor: C.ink, pointRadius: 3, borderWidth: 2, tension: .3, order: 0},
+      {type: "bar", label: "Released", data: cy.mOffered, backgroundColor: C.soft, borderRadius: 3, order: 2},
+      {type: "bar", label: "Sold", data: cy.mSold, backgroundColor: C.blue, borderRadius: 3, order: 1}]},
+    options: {plugins: {legend: {display: true, position: "top", align: "end", labels: {boxWidth: 10, boxHeight: 10}},
+        tooltip: {callbacks: {label: c => c.dataset.label === "Take-up" ? `Take-up: ${pct(c.raw)}` : `${c.dataset.label}: ${num(c.raw)} units`}}},
+      scales: {y: {...gridY, ticks: {callback: v => num(v)}}, y1: {position: "right", min: 0, max: 1, grid: {display: false}, border: {display: false}, ticks: {callback: v => pct(v, 0)}}, x: noGrid}}});
+
+  const tr = (p, k) => p && p.takeByProduct[k] && p.takeByProduct[k].units_offered ? p.takeByProduct[k].units_sold / p.takeByProduct[k].units_offered : null;
+  const types = PRODUCTS.filter(p => cy.takeByProduct[p]);
+  pairBars("cTakeType", types, types.map(t => tr(cy, t)), types.map(t => tr(ly, t)), {money: false, horizontal: false});
+
+  /* take-up by project */
+  const tp = (p, k) => p && p.takeByProject[k] && p.takeByProject[k].units_offered ? p.takeByProject[k].units_sold / p.takeByProject[k].units_offered : null;
+  const projs = Object.keys(cy.takeByProject).filter(k => cy.takeByProject[k].units_offered >= 20).sort((a, b) => tp(cy, b) - tp(cy, a));
+  draw("cTakeProj", {type: "bar",
+    data: {labels: projs, datasets: [
+      {label: String(S.year - 1), data: projs.map(k => tp(ly, k)), backgroundColor: C.grey, borderRadius: 3, barPercentage: .8, categoryPercentage: .7},
+      {label: String(S.year), data: projs.map(k => tp(cy, k)), backgroundColor: projs.map(k => tp(cy, k) >= .5 ? C.blue : C.red), borderRadius: 3, barPercentage: .8, categoryPercentage: .7}]},
+    options: {indexAxis: "y", layout: {padding: {right: 40}},
+      plugins: {legend: {display: true, position: "top", align: "end", labels: {boxWidth: 10, boxHeight: 10}}, tooltip: pctTip, vl: {datasets: [1], fmt: v => pct(v, 0)}},
+      scales: {x: {...gridY, min: 0, max: 0.8, ticks: {callback: v => pct(v, 0)}}, y: noGrid}},
+    plugins: [{id: "ref50", afterDraw(ch) { const x = ch.scales.x.getPixelForValue(.5), {top, bottom} = ch.chartArea, ctx = ch.ctx;
+      ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = C.ink; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, bottom); ctx.stroke(); ctx.restore(); }}]});
+
+  pairBars("cBand", BANDS.map(b => BAND_LABEL[b]), BANDS.map(b => cy.byBand[b] || 0), BANDS.map(b => ly ? ly.byBand[b] || 0 : null), {horizontal: false});
+
+  const dr = (p, r) => p && p.discByRegion[r] ? p.discByRegion[r].discount_idr / (p.discByRegion[r].discount_idr + p.discByRegion[r].net_sales_idr) : null;
+  const regs = REGIONS.filter(r => cy.discByRegion[r]);
+  pairBars("cDisc", regs, regs.map(r => dr(cy, r)), regs.map(r => dr(ly, r)), {money: false});
+
+  /* payment mix 100% stacked */
+  const yrs = ly ? [ly, cy] : [cy];
+  const payDs = [["Mortgage (KPR)", "kprShare", C.blue], ["Cash", "cashShare", C.mid], ["Installment", "instShare", C.amber]]
+    .map(([lab, k, col]) => ({label: lab, data: yrs.map(p => p[k]), backgroundColor: col, borderRadius: 2}));
+  draw("cPay", {type: "bar", data: {labels: yrs.map(p => String(p.year)), datasets: payDs},
+    options: {indexAxis: "y", plugins: {legend: {display: true, position: "bottom", labels: {boxWidth: 10, boxHeight: 10}}, tooltip: pctTip},
+      scales: {x: {stacked: true, max: 1, ...gridY, ticks: {callback: v => pct(v, 0)}}, y: {stacked: true, ...noGrid}}},
+    plugins: [{id: "inside", afterDatasetsDraw(ch) {
+      const ctx = ch.ctx; ctx.save(); ctx.font = "600 10.5px Segoe UI, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ch.data.datasets.forEach((ds, di) => ch.getDatasetMeta(di).data.forEach((el, i) => {
+        const v = ds.data[i]; if (v == null || v < .1) return;
+        ctx.fillStyle = di === 1 ? "#1F2937" : "#fff"; ctx.fillText(pct(v, 0), (el.x + el.base) / 2, el.y);
+      })); ctx.restore(); }}]});
+
+  /* new vs existing */
+  const stockDs = [
+    {label: "New launches", data: yrs.map(p => p.newNet), backgroundColor: C.blue, borderRadius: 2, stack: "s"},
+    {label: "Existing stock", data: yrs.map(p => p.oldNet), backgroundColor: C.mid, borderRadius: 2, stack: "s"},
+    {label: "of which tax-break", data: yrs.map(p => p.ppn), backgroundColor: C.amber, borderRadius: 2, stack: "t"}];
+  draw("cStock", {type: "bar", data: {labels: yrs.map(p => String(p.year)), datasets: stockDs},
+    options: {plugins: {legend: {display: true, position: "bottom", labels: {boxWidth: 10, boxHeight: 10}}, tooltip: moneyTip},
+      scales: {y: {stacked: true, ...gridY, ticks: {callback: rpAxis}}, x: {stacked: true, ...noGrid}}}});
+}
+
+/* ---------- 3 · CONVERSION ---------- */
+function renderConversion(cy, ly, sc) {
+  const topReason = Object.entries(cy.reasons).sort((a, b) => b[1] - a[1])[0];
+  const bankShare = div(cy.reasons["Bank declined the mortgage"] || 0, cy.cancelTotalFY);
+  const bankShareLy = ly ? div(ly.reasons["Bank declined the mortgage"] || 0, ly.cancelTotalFY) : null;
+  document.getElementById("k-conversion").innerHTML = [
+    kpiCard({label: "Gross Bookings", help: "Net sales + cancelled value: all contracts signed before cancellations.", value: rp(cy.gross),
+      rows: [["Net after cancel", rp(cy.net), ""], ["vs LY", ly ? rp(ly.gross) : "—", chip(cy.gross, ly && ly.gross)]]}),
+    kpiCard({label: "Cancellation Rate", help: "Cancelled value ÷ gross bookings.", value: pct(cy.cancelRate),
+      rows: [["Rate LY", ly ? pct(ly.cancelRate) : "—", chip(cy.cancelRate, ly && ly.cancelRate, {mode: "pp", inverse: true})], ["Value", rp(cy.cancel), ""], ["Value LY", ly ? rp(ly.cancel) : "—", chip(cy.cancel, ly && ly.cancel, {inverse: true})]]}),
+    kpiCard({label: "Bank-Declined Share", help: "Share of cancelled value where the bank declined the mortgage. Full year.", value: pct(bankShare, 0),
+      rows: [["Top reason", topReason ? topReason[0].replace("Buyer ", "").replace("the ", "") : "—", ""], ["vs LY", ly ? pct(bankShareLy, 0) : "—", chip(bankShare, bankShareLy, {mode: "pp", inverse: true})]]}),
+    kpiCard({label: "Handover Revenue", help: "Revenue recognised at key handover.", value: rp(cy.rev),
+      rows: [["vs net sales", pct(div(cy.rev, cy.net), 0), ""], ["vs LY", ly ? rp(ly.rev) : "—", chip(cy.rev, ly && ly.rev)]]}),
+    kpiCard({label: "Gross Margin", help: "Gross profit ÷ handover revenue.", value: pct(cy.margin),
+      rows: [["Gross profit", rp(cy.gp), ""], ["vs LY", ly ? pct(ly.margin) : "—", chip(cy.margin, ly && ly.margin, {mode: "pp"})]]}),
+    kpiCard({label: "Aged Backlog >18m", help: "Share of backlog waiting more than 18 months for handover.", value: pct(cy.agedShare, 0),
+      rows: [["vs LY", ly ? pct(ly.agedShare, 0) : "—", chip(cy.agedShare, ly && ly.agedShare, {mode: "pp", inverse: true})], ["Backlog", rp(cy.backlog, 1), ""], ["Backlog LY", ly ? rp(ly.backlog, 1) : "—", chip(cy.backlog, ly && ly.backlog)]]}),
+  ].join("");
+
+  draw("cHandover", {type: "bar", data: {labels: MONTHS, datasets: [
+      {label: "Net marketing sales (contracts)", data: cy.mNet, backgroundColor: C.blue, borderRadius: 3},
+      {label: "Handover revenue", data: cy.mRev, backgroundColor: C.grey, borderRadius: 3}]},
+    options: {plugins: {legend: {display: true, position: "top", align: "end", labels: {boxWidth: 10, boxHeight: 10}}, tooltip: moneyTip},
+      scales: {y: {...gridY, ticks: {callback: rpAxis}}, x: noGrid}}});
+
+  const reasons = Object.keys(cy.reasons).sort((a, b) => cy.reasons[b] - cy.reasons[a]);
+  const short = r => r.replace("Buyer could not afford the installment", "Can't afford installment").replace("Bank declined the mortgage", "Bank declined mortgage").replace("Buyer switched to another home", "Switched to another home");
+  pairBars("cReasons", reasons.map(short), reasons.map(r => div(cy.reasons[r], cy.cancelTotalFY)), reasons.map(r => ly ? div(ly.reasons[r] || 0, ly.cancelTotalFY) : null), {money: false});
+
+  /* backlog trend */
+  const labels = [], bv = [], ag = [];
+  YEARS.forEach(y => { for (let m = 1; m <= 12; m++) {
+    if (y > S.year || (y === S.year && m > S.upto)) continue;
+    const r = D.backlog.filter(x => x.year === y && x.month === m && inScope(x, sc));
+    const b = sum(r, "backlog_value_idr"), a = sum(r, "aged_over_18m_idr");
+    labels.push(`${MONTHS[m - 1]} ${String(y).slice(2)}`); bv.push(b); ag.push(div(a, b));
+  }});
+  draw("cBacklog", {data: {labels, datasets: [
+      {type: "line", label: "Aged >18m share", data: ag, yAxisID: "y1", borderColor: C.red, backgroundColor: C.red, pointRadius: 0, borderWidth: 2, tension: .3},
+      {type: "bar", label: "Backlog", data: bv, backgroundColor: C.mid, borderRadius: 2}]},
+    options: {plugins: {legend: {display: true, position: "top", align: "end", labels: {boxWidth: 10, boxHeight: 10}},
+        tooltip: {callbacks: {label: c => c.dataset.yAxisID === "y1" ? `Aged share: ${pct(c.raw)}` : `Backlog: ${rp(c.raw)}`}}},
+      scales: {y: {...gridY, ticks: {callback: rpAxis}}, y1: {position: "right", min: 0, grid: {display: false}, border: {display: false}, ticks: {callback: v => pct(v, 0)}}, x: {...noGrid, ticks: {maxRotation: 0, autoSkip: true, maxTicksLimit: 8}}}}});
+
+  const cr = (p, r) => p && p.cancelByRegion[r] && p.cancelByRegion[r].gross_sales_idr ? p.cancelByRegion[r].cancel_value_idr / p.cancelByRegion[r].gross_sales_idr : null;
+  const regs = REGIONS.filter(r => cy.cancelByRegion[r]);
+  pairBars("cCancelReg", regs, regs.map(r => cr(cy, r)), regs.map(r => cr(ly, r)), {money: false});
+
+  const mr = (p, k) => p && p.marginByProduct[k] && p.marginByProduct[k].revenue_idr ? p.marginByProduct[k].gross_profit_idr / p.marginByProduct[k].revenue_idr : null;
+  const prods = PRODUCTS.filter(k => cy.marginByProduct[k]);
+  pairBars("cMargin", prods, prods.map(k => mr(cy, k)), prods.map(k => mr(ly, k)), {money: false});
+
+  /* bank rejections by project (cancellations are full-year, so use full-year bookings) */
+  const fy = S.upto === 12 ? cy : pack(S.year, 12, sc), fyLy = ly ? pack(S.year - 1, 12, sc) : null;
+  const bp = bankProjects(fy, fyLy);
+  const bmax = Math.max(...bp.map(p => p.bank), 1);
+  document.getElementById("sub-bankProj").textContent = bp.length
+    ? `${S.year} full year · ranked by bank-declined value · top project = suggested pilot for a bank-partner programme`
+    : "";
+  document.getElementById("tBankProj").innerHTML = bp.length ? `<table class="t"><thead><tr>
+      <th>Project</th><th>City group</th><th>Bank-declined value</th><th class="num">vs LY</th>
+      <th class="num">% of project's cancellations</th><th class="num">Rejection rate</th><th class="num">vs LY</th><th class="num">Mortgage (KPR) share</th></tr></thead><tbody>
+    ${bp.map((p, i) => `<tr><td>${p.name}${i === 0 ? ` <span class="chip bad">Pilot</span>` : ""}</td><td>${p.region}</td>
+      <td><div class="bar-cell"><div class="b" style="width:${(p.bank / bmax) * 140}px;background:${i === 0 ? C.red : C.mid}"></div>${rp(p.bank)}</div></td>
+      <td class="num">${chip(p.bank, p.bankLy, {inverse: true})}</td>
+      <td class="num">${pct(p.shareOfCancel, 0)}</td><td class="num">${pct(p.rate)}</td>
+      <td class="num">${chip(p.rate, p.rateLy, {mode: "pp", inverse: true})}</td><td class="num">${pct(p.kpr, 0)}</td></tr>`).join("")}
+    </tbody></table>` : `<div class="empty" style="height:80px">No bank-declined cancellations for this selection</div>`;
+}
+
+function bankProjects(fy, fyLy) {
+  const rate = (p, n) => p && p.bankByProject[n] && p.payByProject[n] ? div(p.bankByProject[n].cancel_value_idr, p.payByProject[n].gross_sales_idr) : null;
+  return Object.keys(fy.bankByProject).map(n => {
+    const meta = (fy.projMeta[n] || {});
+    return {
+      name: n, region: meta.region || "",
+      bank: fy.bankByProject[n].cancel_value_idr,
+      bankLy: fyLy && fyLy.bankByProject[n] ? fyLy.bankByProject[n].cancel_value_idr : null,
+      shareOfCancel: div(fy.bankByProject[n].cancel_value_idr, fy.cancelByProject[n] ? fy.cancelByProject[n].cancel_value_idr : 0),
+      rate: rate(fy, n), rateLy: rate(fyLy, n),
+      kpr: fy.payByProject[n] ? div(fy.payByProject[n].kpr_net_idr, fy.payByProject[n].net_sales_idr) : null,
+    };
+  }).filter(p => p.bank > 0).sort((a, b) => b.bank - a.bank);
+}
+
+/* ---------- AI SUMMARY (company, full year 2025 vs 2024) ---------- */
+function renderSummary() {
+  const cy = pack(2025, 12, COMPANY), ly = pack(2024, 12, COMPANY);
+  const orig = fullTarget(2025), rev = revisedTarget(2025);
+  const gap = cy.net - ly.net;
+  const regMoves = REGIONS.map(r => ({r, d: (cy.byRegion[r] || 0) - (ly.byRegion[r] || 0), g: ((cy.byRegion[r] || 0) - (ly.byRegion[r] || 0)) / (ly.byRegion[r] || 1)})).sort((a, b) => a.d - b.d);
+  const worst = regMoves[0], best = regMoves[regMoves.length - 1];
+  const tp = (p, k) => p.takeByProject[k] && p.takeByProject[k].units_offered ? p.takeByProject[k].units_sold / p.takeByProject[k].units_offered : null;
+  const projs = Object.keys(cy.takeByProject).filter(k => cy.takeByProject[k].units_offered >= 150).sort((a, b) => tp(cy, b) - tp(cy, a));
+  const topProj = projs[0], lowProj = projs[projs.length - 1];
+  const under2 = k => (k.byBand["Under 1bn"] || 0) + (k.byBand["1-2bn"] || 0);
+  const above5 = k => k.byBand["Above 5bn"] || 0;
+  const apt = cy.takeByProduct["Apartment"]; const aptTake = apt ? apt.units_sold / apt.units_offered : null;
+  const bank = div(cy.reasons["Bank declined the mortgage"], cy.cancelTotalFY);
+  const qtr = (p, s) => p.mNet.slice(s, s + 3).reduce((a, b) => a + b, 0);
+  const q4 = p => qtr(p, 9);
+  const aspLy = ly.newNet / ly.newUnits, aspCy = cy.newNet / cy.newUnits;
+  const vol = (cy.newUnits - ly.newUnits) * aspLy, price = cy.newUnits * (aspCy - aspLy);
+
+  document.getElementById("hero").innerHTML = [
+    ["Net marketing sales 2025", rp(cy.net), chip(cy.net, ly.net) + ` <span class="cap">vs 2024 ${rp(ly.net)}</span>`],
+    ["Achievement vs original target", pct(cy.net / orig), `<span class="chip bad">−${rp(orig - cy.net)}</span> <span class="cap">target ${rp(orig, 1)}</span>`],
+    ["Achievement vs revised target", pct(cy.net / rev), `<span class="chip warn">−${rp(rev - cy.net)}</span> <span class="cap">target ${rp(rev, 1)}</span>`],
+    ["Handover revenue 2025", rp(cy.rev), chip(cy.rev, ly.rev) + ` <span class="cap">margin ${pct(cy.margin)}</span>`],
+  ].map(([l, b, c]) => `<div class="card"><div class="lbl">${l}</div><div class="big">${b}</div><div>${c}</div></div>`).join("");
+
+  const item = (n, sub, text, see) => `<div class="item"><div class="n">${n}<small>${sub}</small></div><div class="t">${text}${see ? `<div style="margin-top:3px;font-size:11px;color:var(--muted)">See: ${see}</div>` : ""}</div></div>`;
+  const signed = v => `${v >= 0 ? "+" : "−"}${Math.abs(v * 100).toFixed(1)}%`;
+  const others = regMoves.filter(m => m.r !== best.r).map(m => Math.abs(m.g * 100));
+  const companyG = gap / ly.net;
+  document.getElementById("ach").innerHTML = [
+    item(signed(best.g), `${best.r} net sales vs 2024`,
+      `<b>${best.r} had the smallest drop of the 4 city groups</b>: ${rp(ly.byRegion[best.r])} → ${rp(cy.byRegion[best.r])}, ${signed(best.g)}. The company fell ${Math.abs(companyG * 100).toFixed(1)}% and the other city groups fell ${Math.min(...others).toFixed(0)}–${Math.max(...others).toFixed(0)}%. Its project ${topProj} sold <b>${pct(tp(cy, topProj))}</b> of the new units it released, the best take-up of any project.`,
+      "Company Overview › By city group; Sales Drivers › Take-up by project"),
+    item(signed((under2(cy) - under2(ly)) / under2(ly)), "net sales of homes under Rp2 bn, vs 2024",
+      `<b>Homes priced under Rp2 bn grew</b> from ${rp(under2(ly))} to ${rp(under2(cy))} (${signed((under2(cy) - under2(ly)) / under2(ly))}), while total sales fell ${Math.abs(companyG * 100).toFixed(1)}%. Their share of net sales rose from ${pct(under2(ly) / ly.net, 0)} to ${pct(under2(cy) / cy.net, 0)}: this is where buyers are still active.`,
+      "Sales Drivers › Net sales by price band (&lt; Rp1 bn and Rp1–2 bn bars)"),
+    item(rp(q4(cy), 2), `net sales Oct–Dec 2025 ${chip(q4(cy), q4(ly))}`,
+      `<b>Q4 grew vs the same quarter of 2024</b>: ${rp(q4(ly))} → ${rp(q4(cy))}. By quarter vs 2024: ${[0, 3, 6, 9].map((s, i) => `Q${i + 1} ${signed(qtr(cy, s) / qtr(ly, s) - 1)}`).join(" · ")}. Sales recovered at year-end.`,
+      "Company Overview › Monthly net marketing sales (Oct–Dec bars)"),
+  ].join("");
+
+  const bankLy = div(ly.reasons["Bank declined the mortgage"], ly.cancelTotalFY);
+  const wG = worst.d / (ly.byRegion[worst.r] || 1);
+  document.getElementById("gaps").innerHTML = [
+    item(`−${rp(orig - cy.net)}`, `short of the ${rp(orig, 1)} sales target`,
+      `<b>Missed the 2025 target.</b> Net sales ${rp(cy.net)} vs target ${rp(orig, 1)} = ${pct(cy.net / orig)} achieved. Even the revised target of ${rp(rev, 1)} was missed: ${pct(cy.net / rev)} achieved, ${rp(rev - cy.net)} short.`,
+      "Company Overview › Full-year tracking"),
+    item(`−${rp(Math.abs(worst.d))}`, `${worst.r} net sales change vs 2024`,
+      `<b>${worst.r} caused ${pct(worst.d / gap, 0)} of the company's ${rp(Math.abs(gap))} drop.</b> Sales fell from ${rp(ly.byRegion[worst.r])} to ${rp(cy.byRegion[worst.r])} (${signed(wG)}); it is still ${pct(cy.byRegion[worst.r] / cy.net, 0)} of company sales. Company-wide, homes above Rp5 bn fell from ${rp(above5(ly))} to ${rp(above5(cy))} (${signed(above5(cy) / above5(ly) - 1)}).`,
+      "Company Overview › By city group; Sales Drivers › Net sales by price band (&gt; Rp5 bn bar)"),
+    item(pct(cy.takeup), `new-launch take-up (sold ÷ released) ${chip(cy.takeup, ly.takeup, {mode: "pp"})}`,
+      `<b>New launches sell more slowly.</b> ${num(cy.launchSold)} of ${num(cy.offered)} new units released were sold (${pct(cy.takeup)}), vs ${pct(ly.takeup)} in 2024. Selling fewer new units cut net sales by ${rp(Math.abs(vol))}. Weakest: apartments sold ${pct(aptTake)} of units released; ${lowProj} ${pct(tp(cy, lowProj))}.`,
+      "Company Overview › Year-on-year bridge; Sales Drivers › Take-up by home type / by project"),
+    item(pct(cy.cancelRate), `cancellation rate (cancelled ÷ gross bookings) ${chip(cy.cancelRate, ly.cancelRate, {mode: "pp", inverse: true})}`,
+      `<b>More deals fall through.</b> ${rp(cy.cancel)} of contracts were cancelled vs ${rp(ly.cancel)} in 2024; the rate rose from ${pct(ly.cancelRate)} to ${pct(cy.cancelRate)}. The bank declining the mortgage caused ${pct(bank, 0)} of cancelled value (was ${pct(bankLy, 0)}), and ${pct(cy.kprShare, 0)} of sales use a mortgage (KPR).`,
+      "Conversion & Delivery › Cancellation Rate, Cancellation reasons; Sales Drivers › Payment method mix"),
+    item(pct(cy.discRate), `average discount (discount ÷ list price) ${chip(cy.discRate, ly.discRate, {mode: "pp", inverse: true})}`,
+      `<b>Bigger discounts did not lift volume.</b> Discount rose from ${pct(ly.discRate)} to ${pct(cy.discRate)} (${rp(cy.disc)} given), yet new units sold still fell ${Math.abs((cy.launchSold / ly.launchSold - 1) * 100).toFixed(1)}% (${num(ly.launchSold)} → ${num(cy.launchSold)}). Average new-unit price fell from Rp${(aspLy / 1e9).toFixed(2)} bn to Rp${(aspCy / 1e9).toFixed(2)} bn and gross margin from ${pct(ly.margin)} to ${pct(cy.margin)}.`,
+      "Sales Drivers › Average Discount, Avg New-Unit Price; Conversion & Delivery › Gross margin"),
+    item(pct(cy.agedShare, 0), `aged backlog (waiting &gt;18 months) ${chip(cy.agedShare, ly.agedShare, {mode: "pp", inverse: true})}`,
+      `<b>Delivery is slowing.</b> Of ${rp(cy.backlog, 1)} of homes sold but not yet handed over, ${rp(cy.aged)} (${pct(cy.agedShare, 0)}) have waited more than 18 months, vs ${pct(ly.agedShare, 0)} a year earlier.`,
+      "Conversion & Delivery › Backlog and aged backlog"),
+  ].join("");
+
+  const ev = (text, see) => `<li>${text} <span class="see">See: ${see}</span></li>`;
+  const rec = (n, what, lever, evidence, action) => `<div class="rec"><div class="num">${n}</div>
+    <div><div class="what">${what}<span class="tag">${lever}</span></div>
+      <div class="why"><b>Why, from the data:</b><ul class="ev">${evidence.join("")}</ul><b>Action:</b> ${action}</div></div></div>`;
+
+  const regionPack = (y, r) => pack(y, 12, {region: r, product: "all"});
+  const regs = REGIONS.map(r => ({r, cy: regionPack(2025, r), ly: regionPack(2024, r)}));
+  const unitsG = x => x.cy.units / x.ly.units - 1;
+  const growing = regs.filter(x => unitsG(x) > 0).sort((a, b) => unitsG(b) - unitsG(a));
+  const demandTop = growing[0] || [...regs].sort((a, b) => unitsG(b) - unitsG(a))[0];
+  const projIn = r => Object.keys(cy.takeByProject).filter(k => cy.projMeta[k] && cy.projMeta[k].region === r).sort((a, b) => tp(cy, a) - tp(cy, b));
+  const u2 = under2, u2G = x => u2(x.cy) / u2(x.ly) - 1;
+  const u2Top = [...regs].sort((a, b) => u2G(b) - u2G(a))[0];
+  const bandMoves = BANDS.map(b => `${BAND_LABEL[b]} ${signed((cy.byBand[b] || 0) / (ly.byBand[b] || 1) - 1)}`).join(", ");
+  [...regs].sort((a, b) => a.cy.takeup - b.cy.takeup).forEach((x, i) => { x.takeRank = i + 1; });
+  [...regs].sort((a, b) => b.cy.agedShare - a.cy.agedShare).forEach((x, i) => { x.agedRank = i + 1; });
+  const stop = [...regs].sort((a, b) => (a.takeRank + a.agedRank) - (b.takeRank + b.agedRank) || a.cy.takeup - b.cy.takeup).slice(0, 2);
+  const tk = (p, k) => p.takeByProduct[k] && p.takeByProduct[k].units_offered ? p.takeByProduct[k].units_sold / p.takeByProduct[k].units_offered : null;
+  const chg = k => (cy.byProduct[k] || 0) / (ly.byProduct[k] || 1) - 1;
+  const afford = r => div(r.reasons["Buyer could not afford the installment"] || 0, r.cancelTotalFY);
+  const bp = bankProjects(cy, ly), pilot = bp[0];
+  const top3Share = div(bp.slice(0, 3).reduce((a, p) => a + p.bank, 0), cy.reasons[BANK]);
+  const types = PRODUCTS.map(p => ({p, cy: pack(2025, 12, {region: "all", product: p}), ly: pack(2024, 12, {region: "all", product: p})}));
+  const focus = [...types].sort((a, b) => (b.cy.units / b.ly.units) - (a.cy.units / a.ly.units))[0];
+  const typeOthers = f => types.filter(x => x !== focus).map(f).join(", ");
+  const weakType = [...types].sort((a, b) => a.cy.takeup - b.cy.takeup)[0];
+  const focusBand = b => `${BAND_LABEL[b]} ${rp(focus.ly.byBand[b] || 0)} → ${rp(focus.cy.byBand[b] || 0)} (${signed((focus.cy.byBand[b] || 0) / (focus.ly.byBand[b] || 1) - 1)})`;
+
+  document.getElementById("recs").innerHTML = [
+    rec(1, `Shift more 2026 development to ${demandTop.r}, where demand grew`, "Product & launch", [
+      ev(`${demandTop.r} is ${growing.length === 1 ? "the only city group that sold more homes" : "the city group with the strongest growth in homes sold"}: ${num(demandTop.ly.units)} → ${num(demandTop.cy.units)} units (${signed(unitsG(demandTop))}). The others: ${regs.filter(x => x !== demandTop).map(x => `${x.r} ${signed(unitsG(x))}`).join(", ")}.`, "Company Overview with City group filter › Net Marketing Sales card (units sold)"),
+      ev(`${demandTop.r} net sales held almost flat (${signed(demandTop.cy.net / demandTop.ly.net - 1)}) while the company fell ${Math.abs(companyG * 100).toFixed(1)}%.`, "Company Overview › By city group"),
+      ev(`${demandTop.r} has the highest take-up: ${pct(demandTop.cy.takeup)} of new units released were sold (${projIn(demandTop.r).slice().reverse().map(k => `${k} ${pct(tp(cy, k))}`).join(", ")}).`, "Sales Drivers with City group filter › Take-up Rate; Sales Drivers › Take-up by project"),
+    ], `Move a larger share of the 2026 launch pipeline to ${demandTop.r} (${projIn(demandTop.r).slice().reverse().join(", ")}). Where to cut launches is covered in recommendation 4.`),
+
+    rec(2, `Focus 2026 development on ${focus.p.toLowerCase()}s under Rp2 bn`, "Product & launch", [
+      ev(`<b>Price:</b> homes under Rp2 bn are the only price range that grew (${bandMoves}) and are now ${pct(under2(cy) / cy.net, 0)} of net sales (${rp(under2(cy))}), up from ${pct(under2(ly) / ly.net, 0)}.`, "Sales Drivers › Net sales by price band"),
+      ev(`${regs.every(x => u2G(x) > 0) ? `This grew in all ${regs.length} city groups` : `This grew in ${regs.filter(x => u2G(x) > 0).length} of ${regs.length} city groups`}. <b>${u2Top.r}</b> grew most: ${rp(u2(u2Top.ly))} → ${rp(u2(u2Top.cy))} (${signed(u2G(u2Top))}). The others: ${regs.filter(x => x !== u2Top).map(x => `${x.r} ${signed(u2G(x))}`).join(", ")}.`, "Sales Drivers with City group filter › Net sales by price band"),
+      ev(`<b>Home type:</b> ${focus.p.toLowerCase()}s are the only type that sold more units (${num(focus.ly.units)} → ${num(focus.cy.units)}, ${signed(focus.cy.units / focus.ly.units - 1)}; ${typeOthers(x => `${x.p} ${signed(x.cy.units / x.ly.units - 1)}`)}), and their share of net sales rose from ${pct(focus.ly.net / ly.net, 0)} to ${pct(focus.cy.net / cy.net, 0)}.`, "Company Overview › By home type"),
+      ev(`Within ${focus.p.toLowerCase()}s the growth is under Rp2 bn (${focusBand("Under 1bn")}; ${focusBand("1-2bn")}), while higher-priced ones fell (${focusBand("2-5bn")}).`, `Sales Drivers with Home type = ${focus.p} › Net sales by price band`),
+      ev(`${focus.p}s have the highest take-up (${pct(focus.cy.takeup)}), the lowest discount (${pct(focus.cy.discRate)}) and the lowest cancellation rate (${pct(focus.cy.cancelRate)}). The others: ${typeOthers(x => `${x.p} take-up ${pct(x.cy.takeup)}, discount ${pct(x.cy.discRate)}`)}.`, "Sales Drivers › Take-up by home type; Sales Drivers and Conversion & Delivery with Home type filter"),
+      ev(`<b>Discounts did not save the expensive end:</b> homes above Rp5 bn fell ${Math.abs((above5(cy) / above5(ly) - 1) * 100).toFixed(0)}% even though average discount rose from ${pct(ly.discRate)} to ${pct(cy.discRate)}. ${weakType.p}s are the weakest type: take-up ${pct(weakType.cy.takeup)}, discount ${pct(weakType.cy.discRate)}, ${pct(weakType.cy.agedShare, 0)} of backlog aged over 18 months, net sales ${signed(weakType.cy.net / weakType.ly.net - 1)}.`, `Sales Drivers › Net sales by price band; Home type = ${weakType.p}`),
+      ev(`Bank rejections plus unaffordable installments are ${pct(bank + afford(cy), 0)} of cancelled value (was ${pct(bankLy + afford(ly), 0)}): buyers need a smaller loan, which a lower-priced home gives them.`, "Conversion & Delivery › Cancellation reasons"),
+    ], `Plan most 2026 clusters as ${focus.p.toLowerCase()}s under Rp2 bn, with the largest share in ${u2Top.r}. Keep shophouses only as small support clusters inside these estates, launch no new ${weakType.p.toLowerCase()} towers, and hold back new homes above Rp2 bn until the existing stock sells. Where launches are paused (recommendation 4), restart with this product. ${focus.p}s carry a lower gross margin (${pct(focus.cy.margin)}) than land lots (${pct(types.find(x => x.p === "Land lot").cy.margin)}) and ${num(focus.cy.offered - focus.cy.launchSold)} units from 2025 launches are still unsold, so release them in phases that follow take-up.`),
+
+    rec(3, `Partner with banks to give buyers more reliable mortgage options, piloting at ${pilot.name}`, "Conversion", [
+      ev(`Cancellation rate rose from ${pct(ly.cancelRate)} to ${pct(cy.cancelRate)}; cancelled value ${rp(ly.cancel)} → ${rp(cy.cancel)}.`, "Conversion & Delivery › Cancellation Rate"),
+      ev(`The bank declining the mortgage is now the top reason: ${pct(bank, 0)} of cancelled value (${rp(cy.reasons[BANK])}), up from ${pct(bankLy, 0)}.`, "Conversion & Delivery › Cancellation reasons"),
+      ev(`${pct(cy.kprShare, 0)} of net sales are paid with a mortgage (KPR), so bank approval decides most sales.`, "Sales Drivers › Payment method mix"),
+      ev(`<b>${pilot.name}</b> (${pilot.region}) has the most bank-declined cancellations: ${rp(pilot.bank)}${pilot.bankLy ? `, up from ${rp(pilot.bankLy)}` : ""}. That is ${pct(pilot.shareOfCancel, 0)} of its cancellations and a rejection rate of ${pct(pilot.rate)} of gross bookings${pilot.rateLy != null ? ` (was ${pct(pilot.rateLy)})` : ""}.`, "Conversion & Delivery › Bank rejections by project"),
+      ev(`The top 3 projects (${bp.slice(0, 3).map(p => p.name).join(", ")}) account for ${pct(top3Share, 0)} of all bank-declined value.`, "Conversion & Delivery › Bank rejections by project"),
+    ], `Set up a panel of partner banks for each project with pre-agreed approval criteria, so every buyer is offered the bank most likely to approve them, plus a back-up bank if the first one declines. Pilot at ${pilot.name} in 2026, then roll out to ${bp.slice(1, 3).map(p => p.name).join(" and ")}. Halving bank rejections at the pilot would keep about ${rp(pilot.bank / 2)} of sales a year; company-wide it would keep about ${rp(cy.reasons[BANK] / 2)}.`),
+
+    rec(4, `Pause 2026 new launches in ${stop[0].r}${stop[1] ? ` and ${stop[1].r}` : ""}: low take-up and a growing aged backlog`, "Product & launch / Delivery", [
+      ev(`Aged backlog keeps rising month after month: homes sold but waiting more than 18 months for handover went from ${pct(ly.agedShare, 0)} to ${pct(cy.agedShare, 0)} of the backlog (${rp(cy.aged)} of ${rp(cy.backlog, 1)}).`, "Conversion & Delivery › Backlog and aged backlog (red line)"),
+      ...stop.map(x => ev(`<b>${x.r}</b>: take-up ${pct(x.cy.takeup)} (rank ${x.takeRank} lowest of 4, was ${pct(x.ly.takeup)}), aged backlog ${pct(x.cy.agedShare, 0)} of its backlog (rank ${x.agedRank} highest, was ${pct(x.ly.agedShare, 0)}), and ${num(x.cy.offered - x.cy.launchSold)} units released in 2025 still unsold. Lowest-take-up projects: ${projIn(x.r).slice(0, 2).map(k => `${k} ${pct(tp(cy, k))}`).join(", ")}.`, `Sales Drivers and Conversion & Delivery with City group = ${x.r} › Take-up Rate, Aged Backlog, Units Released`)),
+      ev(`For comparison, ${demandTop.r} has take-up ${pct(demandTop.cy.takeup)} and aged backlog ${pct(demandTop.cy.agedShare, 0)}.`, `Conversion & Delivery with City group = ${demandTop.r}`),
+    ], `Do not open new clusters in ${stop.map(x => x.r).join(" or ")} in 2026. Sell the units already released (${num(stop.reduce((a, x) => a + x.cy.offered - x.cy.launchSold, 0))} unsold) and finish and hand over homes waiting more than 18 months there first, then restart launches once take-up is back above 50% and aged backlog below 20%.`),
+  ].join("");
+}
+
+/* ---------- DICTIONARY ---------- */
+function renderDictionary() {
+  const levers = [
+    ["North star", "Net marketing sales", "Value of contracts signed, after cancellations, vs the annual target.", "Net marketing sales, achievement vs target"],
+    ["Lever 1", "Product & launch", "Which city, project, home type and price band is released, and how many units.", "Take-up, new-launch sales, sales by city / home type / price band"],
+    ["Lever 2", "Price", "List price, discount, payment terms and the tax-break (PPN DTP) eligibility.", "Average discount, average new-unit price, payment mix, tax-break share"],
+    ["Lever 3", "Conversion & delivery", "Whether a signed contract survives the bank and becomes a handed-over home.", "Cancellation rate & reasons, handover revenue, gross margin, aged backlog"],
+  ];
+  document.getElementById("tLevers").innerHTML = `<table class="t"><thead><tr><th>Level</th><th>Name</th><th>What it means</th><th>Metrics to check</th></tr></thead><tbody>
+    ${levers.map(l => `<tr><td><b>${l[0]}</b></td><td>${l[1]}</td><td class="wrap">${l[2]}</td><td class="wrap">${l[3]}</td></tr>`).join("")}</tbody></table>`;
+  const m = [
+    ["Net marketing sales", "North star", "Value of contracts signed in the period, after cancellations. Booked before the home is built.", "Σ contract value − Σ cancelled value"],
+    ["Achievement vs target", "North star", "Net marketing sales as a share of the annual target (original Rp11.0 tn and revised Rp10.0 tn for 2025).", "Net marketing sales ÷ target"],
+    ["Monthly target", "North star", "Annual target phased by the 2024 monthly sales pattern, used for pace tracking.", "Annual target × 2024 month share"],
+    ["Take-up rate", "Product & launch", "Share of new-launch units released that were sold.", "Units sold ÷ units released"],
+    ["New-launch sales", "Product & launch", "Net sales from clusters launched in the year.", "Σ net sales where inventory = new launch"],
+    ["Sales by city / home type / price band", "Product & launch", "Mix of net sales across segments.", "Σ net sales by segment"],
+    ["Average new-unit price", "Price", "Average value of a newly launched unit sold.", "New-launch net sales ÷ new units sold"],
+    ["Average discount", "Price", "Discount given as a share of list price.", "Discount ÷ (net sales + discount)"],
+    ["Mortgage (KPR) share", "Price", "Share of net sales financed by bank mortgage.", "KPR net sales ÷ net sales"],
+    ["Tax-break sales", "Price", "Net sales of homes using the government VAT incentive (PPN DTP).", "Σ net sales with PPN DTP"],
+    ["Gross bookings", "Conversion", "All contracts signed before cancellations.", "Net sales + cancelled value"],
+    ["Cancellation rate", "Conversion", "Share of booked value that was later cancelled.", "Cancelled value ÷ gross bookings"],
+    ["Bank-declined share", "Conversion", "Share of cancelled value caused by mortgage rejection.", "Bank-declined cancel value ÷ total cancel value"],
+    ["Bank rejection rate (project)", "Conversion", "How much of a project's bookings were lost because the bank declined the mortgage.", "Bank-declined cancel value ÷ project gross bookings"],
+    ["Handover revenue", "Delivery", "Revenue recognised when keys are handed over; lags sales by 1–2 years.", "Σ value of units handed over"],
+    ["Gross margin", "Delivery", "Profit after land and construction cost on homes handed over.", "Gross profit ÷ handover revenue"],
+    ["Backlog", "Delivery", "Signed contracts not yet handed over, at month end.", "Opening backlog + net sales − handovers"],
+    ["Aged backlog", "Delivery", "Share of backlog waiting more than 18 months.", "Backlog > 18 months ÷ backlog"],
+  ];
+  document.getElementById("tMetrics").innerHTML = `<table class="t"><thead><tr><th>Metric</th><th>Lever</th><th>Definition</th><th>Formula</th></tr></thead><tbody>
+    ${m.map(r => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td class="wrap">${r[2]}</td><td class="wrap" style="color:#1D4ED8">${r[3]}</td></tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------- wiring ---------- */
+function render() {
+  const sc = scopeOf();
+  const cy = pack(S.year, S.upto, sc), ly = pack(S.year - 1, S.upto, sc);
+  const regionTxt = S.region === "all" ? "All city groups" : S.region;
+  const prodTxt = S.product === "all" ? "All home types" : S.product;
+  const filtered = ["overview", "drivers", "conversion"].includes(S.tab);
+  document.getElementById("filters").style.visibility = filtered ? "visible" : "hidden";
+  const titles = {overview: "Residential Sales Performance", drivers: "Sales Drivers · Product, Launch & Price", conversion: "Conversion & Delivery",
+    summary: "AI Summary · FY2025 vs FY2024", dictionary: "Metric Dictionary"};
+  document.getElementById("title").textContent = titles[S.tab];
+  document.getElementById("meta").textContent = filtered
+    ? `YTD Jan – ${MONTHS[S.upto - 1]} ${S.year} · ${regionTxt} · ${prodTxt} · For-sale residential · IDR`
+    : S.tab === "summary" ? "Auto-generated from the dashboard data · whole company · full year" : "How each number on this dashboard is defined";
+  if (S.tab === "overview") renderOverview(cy, ly, sc);
+  if (S.tab === "drivers") renderDrivers(cy, ly);
+  if (S.tab === "conversion") renderConversion(cy, ly, sc);
+  if (S.tab === "summary") renderSummary();
+  if (S.tab === "dictionary") renderDictionary();
+}
+
+function init() {
+  const fY = document.getElementById("fYear"), fU = document.getElementById("fUpto"), fR = document.getElementById("fRegion"), fP = document.getElementById("fProduct");
+  fY.innerHTML = YEARS.slice().reverse().map(y => `<option value="${y}">${y}</option>`).join("");
+  fU.innerHTML = MONTHS.map((m, i) => `<option value="${i + 1}">Jan – ${m}</option>`).join("");
+  fR.innerHTML = `<option value="all">All city groups</option>` + REGIONS.map(r => `<option>${r}</option>`).join("");
+  fP.innerHTML = `<option value="all">All home types</option>` + PRODUCTS.map(p => `<option>${p}</option>`).join("");
+  const sync = () => { fY.value = S.year; fU.value = S.upto; fR.value = S.region; fP.value = S.product; };
+  sync();
+  fY.onchange = () => { S.year = +fY.value; render(); };
+  fU.onchange = () => { S.upto = +fU.value; render(); };
+  fR.onchange = () => { S.region = fR.value; render(); };
+  fP.onchange = () => { S.product = fP.value; render(); };
+  document.getElementById("reset").onclick = () => { Object.assign(S, {year: 2025, upto: 12, region: "all", product: "all"}); sync(); render(); };
+  document.querySelectorAll("#segMonthly button").forEach(b => b.onclick = () => {
+    document.querySelectorAll("#segMonthly button").forEach(x => x.classList.toggle("on", x === b));
+    S.monthly = b.dataset.v; render();
+  });
+  document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+    document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("active", x === b));
+    document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === "p-" + b.dataset.tab));
+    S.tab = b.dataset.tab; render(); window.scrollTo(0, 0);
+  });
+  render();
+}
+init();
+</script>
+</body>
+</html>

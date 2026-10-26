@@ -1,0 +1,12 @@
+# Publish only the CV/portfolio website; everything else stays private.
+/*
+!/.gitignore
+!/index.html
+!/cv.html
+!/portfolio.html
+!/ai-dashboards.html
+!/site.css
+!/residential_sales_dashboard/
+/residential_sales_dashboard/*
+!/residential_sales_dashboard/dashboard.html
+!/residential_sales_dashboard/data.js

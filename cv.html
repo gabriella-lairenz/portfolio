@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CV · Gabriella N Lairenz</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html">Gabriella N Lairenz<small>Senior Data Analyst</small></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="cv.html" class="active">CV</a>
+    <a href="portfolio.html">Portfolio</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="crumb"><a href="index.html">Home</a> › CV</div>
+  <article class="cv">
+    <div class="cv-head">
+      <h1>Gabriella N Lairenz</h1>
+      <div class="role">Senior Data Analyst</div>
+      <div class="loc">Jakarta, Indonesia · Open to relocation</div>
+    </div>
+
+    <h2>Profile</h2>
+    <p>Senior analyst with 11+ years in data, including 5 years partnering with Product on food-delivery merchants at Grab across 8 Southeast Asian markets. At Grab, I supported 15+ product launches across Southeast Asia, defining success metrics, running A/B experimentations, and building the dashboards teams use to track results. As a former data engineer, I work hands-on in SQL and build metrics that trace back to source.</p>
+
+    <h2>Work experience</h2>
+
+    <div class="job">
+      <div class="t"><b>Grab · Senior Data Analyst, Merchant</b><span>Sep 2021 – Jun 2026</span></div>
+      <p class="sum">Merchant analytics for food delivery across Indonesia, Thailand, Singapore, Malaysia, Vietnam, the Philippines, Cambodia, and Myanmar, covering onboarding, the new-merchant lifecycle, merchant quality, and the merchant app. Partnered with Product, country operations, Engineering, and Design on 15+ launches (10+ with A/B experiments): set the hypothesis and success metric, sized the sample, closed tracking gaps before release, measured post-launch impact, and recommended whether to iterate or roll out.</p>
+
+      <h3>Product KPI reviews</h3>
+      <ul>
+        <li>Built the KPI dashboard used by Product, Engineering, and country operations, with targets broken down by country, to flag which markets missed target each cycle.</li>
+        <li>Presented metric movement to Product and Analytics leadership every two weeks. Deep-dived drivers with Engineering and country operations to separate seasonality from the impact of launches and programs.</li>
+        <li>Built program monitoring from a regional view down to merchant-level lists, used by country operations in all 8 countries to decide who to follow up with.</li>
+        <li>Used AI (Cursor / Claude) to scale the analysis: a data-context layer for self-serve questions that cut ~50% of ad-hoc requests, plus automated drafting of the bi-weekly readout and metric-driver deep dives.</li>
+      </ul>
+
+      <h3>Onboarding conversion: self-serve onboarding 2.0</h3>
+      <ul>
+        <li>Owned analytics for the redesign of self-serve onboarding. One long form became guided steps (store, business, financial) with in-page validation and AI document extraction and blur detection, so errors are caught before submission rather than rejected after it.</li>
+        <li>Defined the metrics the redesign was judged on (adoption, conversion, rejection, and onboarding SLA) and built the dashboard covering ~50k new merchants a month for operations in all 8 countries, with a stuck-merchant list for follow-up.</li>
+      </ul>
+      <p class="result"><b>Result:</b> self-serve adoption grew ~25pp regionally, onboarding conversion rose ~8pp, and the rejection rate fell by almost half. This freed operations capacity from manual onboarding for fraud and risk verification.</p>
+
+      <h3>Activation: new merchants transacting within 30 days</h3>
+      <ul>
+        <li>Investigate why a new merchant did or did not get a first transaction within 30 days, with a random forest model using SHAP value. The top 5 drivers (item selection, item photo coverage, go-live timing, early cancellations, and campaign adoption) became the recommendations in new-merchant guidance, shown in priority order on the merchant app homepage.</li>
+        <li>Set item-count and photo-coverage thresholds per country and category from the medians of merchants who reached a first transaction.</li>
+        <li>Compared auto go-live defaults across countries (3, 7, 14, or 30 days). Auto-launched merchants transacted at a far lower rate than merchants who chose to go live. Proposed removing auto go-live, because it drove many new-merchant cancellations, and identified 7–10 days as the best go-live window.</li>
+        <li>Found that 9% of new merchants received orders but never fulfilled them, mostly because the store was not open yet. This led to an opening-hours review and a go-live readiness step in new-merchant guidance.</li>
+      </ul>
+      <p class="result"><b>Result:</b> a 1-month A/B test showed +1.3pp on the 7-day transacting rate. After 100% rollout, the 30-day KPI rose +7pp within 3 months, with better item selection, fewer new-merchant cancellations, and higher campaign adoption.</p>
+
+      <h3>Merchant quality: Top Service Program</h3>
+      <ul>
+        <li>Supported the design of a tiered quality program (Top, Good, Basic) for transacting merchants. Thresholds covered store online rate, fulfillment rate, order delay, cancellation, incident rate, and item description and photo coverage. Higher tiers earn incentives. Poor performers lose access to co-funded subsidy programs.</li>
+      </ul>
+      <p class="result"><b>Result:</b> the share of merchants in the Top and Good tiers increased by 2pp, cancellation and incident rates declined, and more orders were delivered on time. That supported the decision to roll the program out to all merchants.</p>
+    </div>
+
+    <div class="job">
+      <div class="t"><b>Blibli.com · Senior Data Analyst → Associate Data Analyst Manager</b><span>Aug 2019 – Sep 2021</span></div>
+      <ul>
+        <li>Built product analytics for flagship stores: providing sales, item performance, fulfillment, ratings, and item-selection recommendations and insights.</li>
+        <li>Built fulfillment dashboards broken down by third-party logistics provider and warehouse.</li>
+        <li>Launched the merchant tiering program (Gold / Silver / Bronze merchant badge), tiered on profile strength, item selection, fulfillment, rating, and return rate.</li>
+        <li>As Associate Data Analyst Manager, supported the merchant team and managed 5 interns, 3 of whom were later hired full-time.</li>
+      </ul>
+    </div>
+
+    <div class="job">
+      <div class="t"><b>Blibli.com · Data Engineer Intern → Principal Data Engineer</b><span>Mar 2014 – Aug 2019</span></div>
+      <ul>
+        <li>Designed and maintained the ecommerce data warehouse (hundreds of fact and dimension tables, 50+ data marts) used by analysts and business teams as the source of truth. Built and maintained pipelines in Airflow and Python.</li>
+      </ul>
+    </div>
+
+    <h2>Education &amp; languages</h2>
+    <p><b>Bachelor of Computer Science</b>, Bina Nusantara University, Jakarta · 2011 – 2015 · GPA 3.96 / 4.0<br>
+    English (fluent) · Bahasa Indonesia (native)</p>
+
+    <div class="two">
+      <div>
+        <h2>Skills</h2>
+        <div class="chips">
+          <span>SQL</span><span>Product metrics and KPI design</span><span>Experimentation (hypothesis, sample size, A/B testing)</span><span>Funnel, conversion, and activation analysis</span><span>User-behavior analysis</span><span>Prioritization of product recommendations</span><span>Business reviews and executive reporting</span><span>Stakeholder management</span><span>Data warehousing and ETL</span>
+        </div>
+      </div>
+      <div>
+        <h2>Tools</h2>
+        <div class="chips">
+          <span>Presto</span><span>PostgreSQL</span><span>MongoDB</span><span>BigQuery</span><span>Python</span><span>Databricks</span><span>Tableau</span><span>Superset</span><span>Power BI</span><span>Google Sheets</span><span>Google Slides / PowerPoint</span><span>Airflow</span><span>Google Analytics</span><span>Cursor</span><span>Claude</span>
+        </div>
+      </div>
+    </div>
+  </article>
+</main>
+
+<footer>© Gabriella N Lairenz</footer>
+</body>
+</html>
